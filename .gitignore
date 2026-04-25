@@ -1,0 +1,17 @@
+# ignores UE files
+
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Content is on Yandex.disk storage
+Content/
+
+# ignores VS files
+.vs/
+*.sln
+.vsconfig
+
+# ignores Rider files
+.idea/

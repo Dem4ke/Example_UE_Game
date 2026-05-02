@@ -70,11 +70,18 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 // Обработка движения вперед
 void APlayerCharacter::MoveForward(float Value)
-{
-	// Проверка на близость к 0
+{	
+	// Если персонаж не на замле и не в состоянии падения, то ничего не делать
+	if (!GetCharacterMovement()->IsMovingOnGround() && 
+		!GetCharacterMovement()->IsFalling())
+	{
+		return;
+	}
+	
+	// Проверка на близость к нулю
 	if (!FMath::IsNearlyZero(Value, 1e-6f))
 	{
-		// Ротатор нужен для перемещения персонажа с помощью мыши
+		// Получение информации о векторе движения по X и поворот его на вектор 1,0,0
 		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		FVector ForwardVector(YawRotator.RotateVector(FVector::ForwardVector));
 		AddMovementInput(ForwardVector, Value);
@@ -83,10 +90,17 @@ void APlayerCharacter::MoveForward(float Value)
 
 void APlayerCharacter::MoveRight(float Value)
 {
-	// Проверка на близость к 0
+	// Если персонаж не на замле и не в состоянии падения, то ничего не делать
+	if (!GetCharacterMovement()->IsMovingOnGround() && 
+		!GetCharacterMovement()->IsFalling())
+	{
+		return;
+	}
+	
+	// Проверка на близость к нулю
 	if (!FMath::IsNearlyZero(Value, 1e-6f))
 	{
-		// Ротатор нужен для перемещения персонажа с помощью мыши
+		// Получение информации о векторе движения по Y и поворот его на вектор 0,1,0
 		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		FVector RightVector(YawRotator.RotateVector(FVector::RightVector));
 		AddMovementInput(RightVector, Value);
@@ -101,6 +115,55 @@ void APlayerCharacter::Turn(float Value)
 void APlayerCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value);
+}
+
+void APlayerCharacter::SwimForward(float Value)
+{
+	if (!GetCharacterMovement()->IsSwimming())
+	{
+		return;
+	}
+	
+	// Проверка на близость к 0
+	if (!FMath::IsNearlyZero(Value, 1e-6f))
+	{
+		// Получение информации о векторе движения по X и поворот его на вектор 1,0,0
+		FRotator PitchYawRotator(GetControlRotation().Pitch, GetControlRotation().Yaw, 0.0f);
+		FVector ForwardVector(PitchYawRotator.RotateVector(FVector::ForwardVector));
+		AddMovementInput(ForwardVector, Value);
+	}
+}
+
+void APlayerCharacter::SwimUp(float Value)
+{
+	if (!GetCharacterMovement()->IsSwimming())
+	{
+		return;
+	}
+	
+	// Проверка на близость к 0
+	if (!FMath::IsNearlyZero(Value, 1e-6f))
+	{
+		// Установка движения сторого по вектору 0,0,1
+		AddMovementInput(FVector::UpVector, Value);
+	}
+}
+
+void APlayerCharacter::SwimRight(float Value)
+{
+	if (!GetCharacterMovement()->IsSwimming())
+	{
+		return;
+	}
+	
+	// Проверка на близость к 0
+	if (!FMath::IsNearlyZero(Value, 1e-6f))
+	{
+		// Получение информации о векторе движения по Y и поворот его на вектор 0,1,0
+		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+		FVector RightVector(YawRotator.RotateVector(FVector::RightVector));
+		AddMovementInput(RightVector, Value);
+	}
 }
 
 void APlayerCharacter::TurnAtRate(float Value)

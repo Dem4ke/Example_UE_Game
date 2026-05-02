@@ -34,6 +34,9 @@ public:
 	virtual void MoveRight(float Value) {};
 	virtual void Turn(float Value) {};
 	virtual void LookUp(float Value) {};
+	virtual void SwimForward(float Value) {};
+	virtual void SwimUp(float Value) {};
+	virtual void SwimRight(float Value) {};
 	
 	// Функционал для геймпадов
 	virtual void TurnAtRate(float Value) {};

@@ -22,6 +22,9 @@ void AEGPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveRight", this, &AEGPlayerController::MoveRight);
 	InputComponent->BindAxis("Turn", this, &AEGPlayerController::Turn);
 	InputComponent->BindAxis("LookUp", this, &AEGPlayerController::LookUp);
+	InputComponent->BindAxis("SwimForward", this, &AEGPlayerController::SwimForward);
+	InputComponent->BindAxis("SwimUp", this, &AEGPlayerController::SwimUp);
+	InputComponent->BindAxis("SwimRight", this, &AEGPlayerController::SwimRight);
 	InputComponent->BindAxis("TurnAtRate", this, &AEGPlayerController::TurnAtRate);
 	InputComponent->BindAxis("LookUpAtRate", this, &AEGPlayerController::LookUpAtRate);
 	
@@ -64,6 +67,30 @@ void AEGPlayerController::LookUp(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->LookUp(Value);
+	}
+}
+
+void AEGPlayerController::SwimForward(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SwimForward(Value);
+	}
+}
+
+void AEGPlayerController::SwimUp(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SwimUp(Value);
+	}
+}
+
+void AEGPlayerController::SwimRight(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SwimRight(Value);
 	}
 }
 

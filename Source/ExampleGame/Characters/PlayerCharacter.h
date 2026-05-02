@@ -27,6 +27,9 @@ public:
 	virtual void MoveRight(float Value) override;
 	virtual void Turn(float Value) override;
 	virtual void LookUp(float Value) override;
+	virtual void SwimForward(float Value) override;
+	virtual void SwimUp(float Value) override;
+	virtual void SwimRight(float Value) override;
 	
 	// Функционал для геймпадов
 	virtual void TurnAtRate(float Value) override;

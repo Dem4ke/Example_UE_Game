@@ -31,6 +31,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsSprinting = false;		// Признак нахождения персонажа в спринте
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsSwimming = false;		// Признак нахождения персонажа в состояния плавания
+	
 private:
 	TWeakObjectPtr<AEGBaseCharacter> CachedBaseCharacter;		// Указатель на текущего перснонажа
 };

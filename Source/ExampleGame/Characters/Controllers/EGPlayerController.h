@@ -27,6 +27,9 @@ private:
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
+	void SwimForward(float Value);
+	void SwimUp(float Value);
+	void SwimRight(float Value);
 	void TurnAtRate(float Value);
 	void LookUpAtRate(float Value);
 	

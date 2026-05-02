@@ -33,4 +33,5 @@ void UEGBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsFalling = CharacterMovement->IsFalling();
 	bIsCrouching = CharacterMovement->IsCrouching();
 	bIsSprinting = CharacterMovement->IsSprinting();
+	bIsSwimming = CharacterMovement->IsSwimming();
 }

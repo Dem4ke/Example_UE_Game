@@ -7,6 +7,7 @@
 #include "EGBaseCharacter.generated.h"
 
 class UEGBaseCharacterMovementComponent;
+class ULedgeDetectorComponent;
 
 // Abstract - запрещает создавать объект данного класса на сцене
 // NotBlueprintable - запрещает создавать блупринты для данного класса
@@ -28,6 +29,7 @@ public:
 	virtual void ChangeCrouchState();
 	virtual void StartSprint();
 	virtual void StopSprint();
+	virtual void Mantle();
 	
 	// Чисто виртуальные методы
 	virtual void MoveForward(float Value) {};
@@ -66,6 +68,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character | Movement")
 	float SprintSpeed = 1000.f;		// Базовая скорость спринта персонажа
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	ULedgeDetectorComponent* LedgeDetectorComponent = nullptr;			// Компонент для поиска уступов
 	
 	UEGBaseCharacterMovementComponent* MovementComponent = nullptr;		// Компонент перемещения для персонажа
 	

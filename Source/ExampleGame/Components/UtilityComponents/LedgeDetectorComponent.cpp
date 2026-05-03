@@ -2,7 +2,8 @@
 
 #include "LedgeDetectorComponent.h"
 
-#include "ExampleGameTypes.h"
+#include "../../ExampleGameTypes.h"
+#include "../../Utility/EGTraceUtility.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 
@@ -38,9 +39,6 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	float ForwardCheckCapsuleRadius = Capsule->GetScaledCapsuleRadius();
 	float ForwardCheckCapsuleHalfHeight = (MaximumLedgeHeight - MinimumLedgeHeight) * 0.5f;
 	
-	FCollisionShape ForwardCapsuleShape = 
-		FCollisionShape::MakeCapsule(ForwardCheckCapsuleRadius, ForwardCheckCapsuleHalfHeight);	
-	
 	// Точка начала каста
 	FVector ForwardStartLocation = CharacterBottom + 
 		(MinimumLedgeHeight + ForwardCheckCapsuleHalfHeight) * FVector::UpVector;
@@ -52,25 +50,28 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	// Результат коллизии
 	FHitResult ForwardHitResult;
 	
-	// Создание shape cast а по нашей форме и проверка на коллизии
-	if (!GetWorld()->SweepSingleByChannel(ForwardHitResult, 
-		ForwardStartLocation, 
-		ForwardEndLocation, 
-		FQuat::Identity, 
+	// Проверка капсулы на коллизию с ближайшим объектом с помощью Shape trace
+	if (!EGTraceUtility::SweepCapsuleSingleByChanel(
+		GetWorld(),
+		ForwardHitResult,
+		ForwardStartLocation,
+		ForwardEndLocation,
+		ForwardCheckCapsuleRadius,
+		ForwardCheckCapsuleHalfHeight,
+		FQuat::Identity,
 		ECC_Climbing,
-		ForwardCapsuleShape,
-		QueryParams))
+		QueryParams,
+		FCollisionResponseParams::DefaultResponseParam,
+		true,
+		2.0f))
 	{
 		return false;
 	}
-	
+
 	// Download check (проверка на высоту найденного вертикального объекта)
 	// Результат коллизии
 	FHitResult DownwardHitResult;
-	
-	// Создание сферы для каста (здесь не нужна капсула, так как кастим строго вниз и проверка только по радиусу)
 	float DownwardSphereTraceRadius = Capsule->GetScaledCapsuleRadius();
-	FCollisionShape DownwardCapsuleShape = FCollisionShape::MakeSphere(DownwardSphereTraceRadius);
 	
 	// Точка начала каста
 	float DepthOffset = 10.f;
@@ -80,31 +81,37 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	// Точка конца каста
 	FVector DownwardEndLocation(DownwardStartLocation.X, DownwardStartLocation.Y, CharacterBottom.Z);
 	
-	// Создание shape cast а по нашей форме и проверка на коллизии
-	if (!GetWorld()->SweepSingleByChannel(DownwardHitResult, 
-		DownwardStartLocation, 
-		DownwardEndLocation, 
-		FQuat::Identity, 
+	if (!EGTraceUtility::SweepSphereSingleByChanel(
+		GetWorld(),
+		DownwardHitResult,
+		DownwardStartLocation,
+		DownwardEndLocation,
+		DownwardSphereTraceRadius,
 		ECC_Climbing,
-		DownwardCapsuleShape,
-		QueryParams))
+		QueryParams,
+		FCollisionResponseParams::DefaultResponseParam,
+		true,
+		2.0f))
 	{
 		return false;
 	}
 	
-	// Overlap check (проверка на дополнительные препятствия в месте подъема игрока)
-	FCollisionShape OverlapCapsuleShape = 
-		FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(), 
-									 Capsule->GetScaledCapsuleHalfHeight());
-	
-	FVector OverlapLocation = DownwardHitResult.ImpactPoint - Capsule->GetScaledCapsuleHalfHeight() * FVector::UpVector;
+	// Overlap check (проверка на дополнительные препятствия в месте подъема игрока)	
+	float OverlapCapsuleFloorOffset = 2.0f;
+	FVector OverlapLocation = DownwardHitResult.ImpactPoint + 
+		(Capsule->GetScaledCapsuleHalfHeight() + OverlapCapsuleFloorOffset) * FVector::UpVector;
 	
 	// Тест коллизии по каналам
-	if (GetWorld()->OverlapAnyTestByProfile(OverlapLocation, 
-		FQuat::Identity, 
-		FName("Pawn"), 
-		OverlapCapsuleShape, 
-		QueryParams))
+	if (EGTraceUtility::OverlapCapsuleAnyByProfile(
+		GetWorld(),
+		OverlapLocation,
+		Capsule->GetScaledCapsuleRadius(),
+		Capsule->GetScaledCapsuleHalfHeight(),
+		FQuat::Identity,
+		FName("Pawn"),
+		QueryParams,
+		true,
+		2.0f))
 	{
 		return false;
 	}

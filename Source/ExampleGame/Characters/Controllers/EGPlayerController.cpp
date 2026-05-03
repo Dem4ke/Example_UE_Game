@@ -28,6 +28,7 @@ void AEGPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("TurnAtRate", this, &AEGPlayerController::TurnAtRate);
 	InputComponent->BindAxis("LookUpAtRate", this, &AEGPlayerController::LookUpAtRate);
 	
+	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AEGPlayerController::Mantle);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AEGPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AEGPlayerController::ChangeCrouchState);
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AEGPlayerController::StartSprint);
@@ -107,6 +108,14 @@ void AEGPlayerController::LookUpAtRate(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->LookUpAtRate(Value);
+	}
+}
+
+void AEGPlayerController::Mantle()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Mantle();
 	}
 }
 

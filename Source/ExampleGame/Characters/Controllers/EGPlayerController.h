@@ -33,6 +33,7 @@ private:
 	void TurnAtRate(float Value);
 	void LookUpAtRate(float Value);
 	
+	void Mantle();
 	void Jump();
 	void ChangeCrouchState();
 	void StartSprint();

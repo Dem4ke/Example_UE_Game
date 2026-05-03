@@ -4,6 +4,7 @@
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../Components/MovementComponents/EGBaseCharacterMovementComponent.h"
+#include "../Components/UtilityComponents/LedgeDetectorComponent.h"
 
 // Конструктор с переинициализацией MovementComponent
 AEGBaseCharacter::AEGBaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -11,6 +12,8 @@ AEGBaseCharacter::AEGBaseCharacter(const FObjectInitializer& ObjectInitializer)
 		(ACharacter::CharacterMovementComponentName))
 {
 	MovementComponent = StaticCast<UEGBaseCharacterMovementComponent*>(GetCharacterMovement());
+	
+	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetectorComponent"));
 }
 
 // Обработчик игрового кадра
@@ -66,6 +69,19 @@ void AEGBaseCharacter::StartSprint()
 void AEGBaseCharacter::StopSprint()
 {
 	bIsSprintRequested = false;
+}
+
+// Метод подтягивания персонажа
+void AEGBaseCharacter::Mantle()
+{
+	FLedgeDescription LedgeDescription;
+	
+	// Если выступ был найден
+	if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
+	{
+		// Активация процесса подтягивания
+		
+	}
 }
 
 // Указатель на возможность применение спринта

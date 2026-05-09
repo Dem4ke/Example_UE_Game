@@ -4,8 +4,10 @@
 
 #include "../../ExampleGameTypes.h"
 #include "../../Utility/EGTraceUtility.h"
+#include "../../Subsystems/DebugSubsystem.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 // Called when the game starts
 void ULedgeDetectorComponent::BeginPlay()
@@ -19,6 +21,15 @@ void ULedgeDetectorComponent::BeginPlay()
 // Метод для поиска доступной точки для залазания (параметры точки записываются в передаваемую структуру)
 bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescription)
 {
+	// Включение и выключение отладочной отрисовки возможно только при работе игры в дебаг режиме
+#if ENABLE_DRAW_DEBUG
+	// Получение информации о необходимости дебажной отрисовки
+	UDebugSubsystem* DebugSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UDebugSubsystem>();
+	bool bIsDebugDrawEnabled = DebugSubsystem->IsCategoryEnabled(DebugCategoryLedgeDetection);
+#else
+	bool bIsDebugDrawEnabled = false;
+#endif
+	
 	// Все проверки осуществляются с помощью Shape Traces (в виде капсулы игрока)
 	// Получение капсулы игрока
 	UCapsuleComponent* Capsule = CachedCharacterOwner->GetCapsuleComponent();
@@ -62,7 +73,7 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 		ECC_Climbing,
 		QueryParams,
 		FCollisionResponseParams::DefaultResponseParam,
-		true,
+		bIsDebugDrawEnabled,
 		2.0f))
 	{
 		return false;
@@ -90,7 +101,7 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 		ECC_Climbing,
 		QueryParams,
 		FCollisionResponseParams::DefaultResponseParam,
-		true,
+		bIsDebugDrawEnabled,
 		2.0f))
 	{
 		return false;
@@ -108,9 +119,9 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 		Capsule->GetScaledCapsuleRadius(),
 		Capsule->GetScaledCapsuleHalfHeight(),
 		FQuat::Identity,
-		FName("Pawn"),
+		CollisionProfilePawn,
 		QueryParams,
-		true,
+		bIsDebugDrawEnabled,
 		2.0f))
 	{
 		return false;

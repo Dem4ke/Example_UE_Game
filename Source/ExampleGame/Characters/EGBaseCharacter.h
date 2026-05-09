@@ -24,7 +24,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	UEGBaseCharacterMovementComponent* GetBaseCharacterMovementComponent() const;
-	
+
 	// Методы с базовым поведением
 	virtual void ChangeCrouchState();
 	virtual void StartSprint();
@@ -75,5 +75,5 @@ protected:
 	UEGBaseCharacterMovementComponent* MovementComponent = nullptr;		// Компонент перемещения для персонажа
 	
 private:
-	bool bIsSprintRequested = false;		// Состояние вызванности спринта
+	bool bIsSprintRequested = false;	// Состояние вызванности спринта
 };

@@ -87,9 +87,8 @@ void AEGBaseCharacter::Mantle()
 // Указатель на возможность применение спринта
 bool AEGBaseCharacter::CanSprint()
 {
-	// Если персонаж в воздухе или присяде, то бежать нельзя
-	if (MovementComponent->IsFalling() ||
-		MovementComponent->IsCrouching())
+	// Если персонаж в воздухе, то бежать нельзя
+	if (MovementComponent->IsFalling())
 	{
 		return false;
 	}

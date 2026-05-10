@@ -5,6 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../Components/MovementComponents/EGBaseCharacterMovementComponent.h"
 #include "../Components/UtilityComponents/LedgeDetectorComponent.h"
+#include "Curves/CurveVector.h"
 
 // Конструктор с переинициализацией MovementComponent
 AEGBaseCharacter::AEGBaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -74,14 +75,59 @@ void AEGBaseCharacter::StopSprint()
 // Метод подтягивания персонажа
 void AEGBaseCharacter::Mantle()
 {
+	// Проверка не подтягивается ли уже персонаж
+	if (MovementComponent->IsMantling())
+	{
+		return;
+	}
+	
 	FLedgeDescription LedgeDescription;
 	
 	// Если выступ был найден
 	if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
 	{
-		// Активация процесса подтягивания
+		FMantlingMovementParameters MantlingParams;
+		MantlingParams.InitialLocation = GetActorLocation();
+		MantlingParams.InitialRotation = GetActorRotation();
+		MantlingParams.TargetLocation = LedgeDescription.Location;
+		MantlingParams.TargetRotation = LedgeDescription.Rotation;
 		
+		float MantlingHeight = (MantlingParams.TargetLocation - MantlingParams.InitialLocation).Z;
+		const FMantlingSettings& MantleSettings = GetMantlingSettings(MantlingHeight);
+		
+		float MinRange = 0.f;
+		float MaxRange = 0.f;
+		MantleSettings.MantlingCurve->GetTimeRange(MinRange, MaxRange);
+		
+		MantlingParams.Duration = MaxRange - MinRange;
+		MantlingParams.MantlingCurve = MantleSettings.MantlingCurve;
+		
+		FVector2D SourceRange(MantleSettings.MinHeight, MantleSettings.MaxHeight);
+		FVector2D TargetRange(MantleSettings.MinHeightStartTime, MantleSettings.MaxHeightStartTime);
+		MantlingParams.StartTime = FMath::GetMappedRangeValueClamped(SourceRange, TargetRange, MantlingHeight);
+		
+		// Подгонка координат начала и конца анимации
+		MantlingParams.InitialAnimationLocation = MantlingParams.TargetLocation - 
+			MantleSettings.AnimationCorrectionZ * FVector::UpVector + 
+			MantleSettings.AnimationCorrectionXY * LedgeDescription.Normal;
+		
+		// Активация процесса подтягивания
+		MovementComponent->StartMantle(MantlingParams);
+		
+		// Активация анимации
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->Montage_Play(
+			MantleSettings.MantlingMontage, 
+			1.0f, 
+			EMontagePlayReturnType::Duration, 
+			MantlingParams.StartTime);
 	}
+}
+
+bool AEGBaseCharacter::CanJumpInternal_Implementation() const
+{
+	return Super::CanJumpInternal_Implementation() &&
+		!MovementComponent->IsMantling();
 }
 
 // Указатель на возможность применение спринта
@@ -112,4 +158,14 @@ void AEGBaseCharacter::TryChangeSprintState()
 		MovementComponent->StopSprint();
 		OnSprintEnd();		// Уведомление об окончании спринта
 	}
+}
+
+const FMantlingSettings& AEGBaseCharacter::GetMantlingSettings(float LedgeHeight) const
+{
+	if (LedgeHeight < LowMantleMaxHeight)
+	{
+		return LowMantleSettings;	
+	}
+		
+	return HighMantleSettings;	
 }

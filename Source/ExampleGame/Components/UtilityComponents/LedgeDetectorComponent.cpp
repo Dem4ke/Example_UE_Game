@@ -128,7 +128,8 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	}
 	
 	// Задание информации о выступе
-	LedgeDescription.Location = DownwardHitResult.ImpactPoint;
+	LedgeDescription.Location = OverlapLocation;
+	LedgeDescription.Normal = ForwardHitResult.ImpactNormal;
 	// Нормаль берем перевернутую (* - перегруженный оператор для компонентного произведения (просто умножает х * х | y * y | z * z))
 	LedgeDescription.Rotation = (ForwardHitResult.ImpactNormal * FVector(-1.f, -1.f, 0.f)).ToOrientationRotator();
 	

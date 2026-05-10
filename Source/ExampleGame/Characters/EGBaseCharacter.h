@@ -8,6 +8,39 @@
 
 class UEGBaseCharacterMovementComponent;
 class ULedgeDetectorComponent;
+class UAnimMontage;
+class UCurveVector;
+
+USTRUCT(BlueprintType)
+// Характеристики лазания
+struct FMantlingSettings
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimMontage* MantlingMontage = nullptr;	// Монтаж с анимацией лазания
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveVector* MantlingCurve = nullptr;		// Набор кривых для настройки монтажа
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float AnimationCorrectionXY = 65.0f;		// Смещение от целевой позиции лазания в направлении нормали выступа (радиус капсулы персонажа)
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float AnimationCorrectionZ = 200.0f;		// Смещение от целевой позиции лазания по высоте в соответствии с анимацией (расчетная высота анимации)
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHeight = 200.0f;					// Максимальная высота, на которую можно забраться с этой анимацией
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MinHeight = 100.0f;					// Минимальная высота, на которую можно забраться с этой анимацией
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHeightStartTime = 0.0f;			// Время начала проигрывания анимации при максимальной высоте
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MinHeightStartTime = 0.5f;			// Время начала проигрывания анимации при минимальной высоте
+};
 
 // Abstract - запрещает создавать объект данного класса на сцене
 // NotBlueprintable - запрещает создавать блупринты для данного класса
@@ -30,6 +63,8 @@ public:
 	virtual void StartSprint();
 	virtual void StopSprint();
 	virtual void Mantle();
+	
+	virtual bool CanJumpInternal_Implementation() const override;
 	
 	// Чисто виртуальные методы
 	virtual void MoveForward(float Value) {};
@@ -58,6 +93,7 @@ protected:
 	
 private:
 	void TryChangeSprintState();
+	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character | Controls")
@@ -71,6 +107,15 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Movement")
 	ULedgeDetectorComponent* LedgeDetectorComponent = nullptr;			// Компонент для поиска уступов
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
+	FMantlingSettings HighMantleSettings;	// Характеристики проигрывания анимации высокого лазания
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
+	FMantlingSettings LowMantleSettings;	// Характеристики проигрывания анимации низкого лазания
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float LowMantleMaxHeight = 125.0f;		// Максимальная высота для проигрывания анимации низкого лазания
 	
 	UEGBaseCharacterMovementComponent* MovementComponent = nullptr;		// Компонент перемещения для персонажа
 	

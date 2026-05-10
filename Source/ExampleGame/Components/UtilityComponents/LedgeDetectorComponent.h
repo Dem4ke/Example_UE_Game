@@ -18,6 +18,9 @@ struct FLedgeDescription
 	FVector Location;	// Локация выступа (точка, на которую должен забраться персонаж)
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ledge description")
+	FVector Normal;		// Нормаль выступа 
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ledge description")
 	FRotator Rotation;	// Ориентация выступа в пространстве (как повернут выступ, чтобы повернуть персонажа)
 };
 

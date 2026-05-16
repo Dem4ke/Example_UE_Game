@@ -130,6 +130,18 @@ bool AEGBaseCharacter::CanJumpInternal_Implementation() const
 		!MovementComponent->IsMantling();
 }
 
+// Регистрация интерактивного объекта 
+void AEGBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+	InteractiveActors.Add(InteractiveActor);
+}
+
+// Снятие регистрации интерактивного объекта
+void AEGBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+	InteractiveActors.Remove(InteractiveActor);
+}
+
 // Указатель на возможность применение спринта
 bool AEGBaseCharacter::CanSprint()
 {

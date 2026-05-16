@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "EGBaseCharacter.generated.h"
 
+class AInteractiveActor;
 class UEGBaseCharacterMovementComponent;
 class ULedgeDetectorComponent;
 class UAnimMontage;
@@ -79,6 +80,10 @@ public:
 	virtual void TurnAtRate(float Value) {};
 	virtual void LookUpAtRate(float Value) {};
 	
+	// Не переопределяемые методы
+	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
+	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
+	
 protected:
 	virtual bool CanSprint();
 	
@@ -120,5 +125,6 @@ protected:
 	UEGBaseCharacterMovementComponent* MovementComponent = nullptr;		// Компонент перемещения для персонажа
 	
 private:
-	bool bIsSprintRequested = false;	// Состояние вызванности спринта
+	bool bIsSprintRequested = false;				// Состояние вызванности спринта
+	TArray<AInteractiveActor*> InteractiveActors;	// Набор интерактивных объектов
 };

@@ -7,6 +7,7 @@
 #include "Ladder.generated.h"
 
 class UStaticMeshComponent;
+class UBoxComponent;
 
 // Класс лестницы как интерактивного объекта
 UCLASS(Blueprintable)
@@ -18,6 +19,9 @@ public:
 	ALadder();
 	
 	virtual void OnConstruction(const FTransform& Transform) override;
+	
+protected:
+	UBoxComponent* GetLadderInteractionBox() const;
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ladder paramers")

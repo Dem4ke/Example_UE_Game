@@ -3,6 +3,8 @@
 #include "EGBaseCharacter.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "../Actors/Interactive/InteractiveActor.h"
+#include "../Actors/Interactive/Environment/Ladder.h"
 #include "../Components/MovementComponents/EGBaseCharacterMovementComponent.h"
 #include "../Components/UtilityComponents/LedgeDetectorComponent.h"
 #include "Curves/CurveVector.h"
@@ -124,6 +126,33 @@ void AEGBaseCharacter::Mantle()
 	}
 }
 
+void AEGBaseCharacter::InteractWithLadder()
+{
+	if (MovementComponent->IsOnLadder())
+	{
+		MovementComponent->DetachFromLadder();
+	}
+	else
+	{
+		const ALadder* Ladder = GetAvailableLadder();
+		
+		if (IsValid(Ladder))
+		{
+			MovementComponent->AttachToLadder(Ladder);
+		}
+	}
+}
+
+void AEGBaseCharacter::ClimbLadderUp(float Value)
+{
+	if (!FMath::IsNearlyZero(Value) &&
+		MovementComponent->IsOnLadder())
+	{
+		FVector LadderUpVector = MovementComponent->GetCurrentLadder()->GetActorUpVector();
+		AddMovementInput(LadderUpVector, Value);
+	}
+}
+
 bool AEGBaseCharacter::CanJumpInternal_Implementation() const
 {
 	return Super::CanJumpInternal_Implementation() &&
@@ -140,6 +169,21 @@ void AEGBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveAc
 void AEGBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
 	InteractiveActors.Remove(InteractiveActor);
+}
+
+const ALadder* AEGBaseCharacter::GetAvailableLadder() const
+{
+	const ALadder* Ladder = nullptr;
+	
+	for (auto& actor : InteractiveActors)
+	{
+		if (actor->IsA<ALadder>())
+		{
+			Ladder = StaticCast<const ALadder*>(actor);
+		}
+	}
+	
+	return Ladder;
 }
 
 // Указатель на возможность применение спринта

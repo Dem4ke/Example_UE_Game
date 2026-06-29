@@ -30,6 +30,8 @@ private:
 	void SwimForward(float Value);
 	void SwimUp(float Value);
 	void SwimRight(float Value);
+	void ClimbLadderUp(float Value);
+	
 	void TurnAtRate(float Value);
 	void LookUpAtRate(float Value);
 	
@@ -38,6 +40,7 @@ private:
 	void ChangeCrouchState();
 	void StartSprint();
 	void StopSprint();
+	void InteractWithLadder();
 	
 private:
 	TSoftObjectPtr<AEGBaseCharacter> CachedBaseCharacter;	// Указатель на базовый класс персонажа 

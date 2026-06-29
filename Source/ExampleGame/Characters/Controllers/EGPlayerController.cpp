@@ -25,9 +25,11 @@ void AEGPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("SwimForward", this, &AEGPlayerController::SwimForward);
 	InputComponent->BindAxis("SwimUp", this, &AEGPlayerController::SwimUp);
 	InputComponent->BindAxis("SwimRight", this, &AEGPlayerController::SwimRight);
+	InputComponent->BindAxis("ClimbLadderUp", this, &AEGPlayerController::ClimbLadderUp);
 	InputComponent->BindAxis("TurnAtRate", this, &AEGPlayerController::TurnAtRate);
 	InputComponent->BindAxis("LookUpAtRate", this, &AEGPlayerController::LookUpAtRate);
 	
+	InputComponent->BindAction("InteractWithLadder", EInputEvent::IE_Released, this, &AEGPlayerController::InteractWithLadder);
 	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AEGPlayerController::Mantle);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AEGPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AEGPlayerController::ChangeCrouchState);
@@ -95,6 +97,14 @@ void AEGPlayerController::SwimRight(float Value)
 	}
 }
 
+void AEGPlayerController::ClimbLadderUp(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ClimbLadderUp(Value);
+	}
+}
+
 void AEGPlayerController::TurnAtRate(float Value)
 {
 	if (CachedBaseCharacter.IsValid())
@@ -152,5 +162,13 @@ void AEGPlayerController::StopSprint()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->StopSprint();
+	}
+}
+
+void AEGPlayerController::InteractWithLadder()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->InteractWithLadder();
 	}
 }

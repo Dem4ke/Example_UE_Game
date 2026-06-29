@@ -11,6 +11,7 @@ class UEGBaseCharacterMovementComponent;
 class ULedgeDetectorComponent;
 class UAnimMontage;
 class UCurveVector;
+class ALadder;
 
 USTRUCT(BlueprintType)
 // Характеристики лазания
@@ -64,6 +65,8 @@ public:
 	virtual void StartSprint();
 	virtual void StopSprint();
 	virtual void Mantle();
+	virtual void InteractWithLadder();
+	virtual void ClimbLadderUp(float Value);
 	
 	virtual bool CanJumpInternal_Implementation() const override;
 	
@@ -83,6 +86,8 @@ public:
 	// Не переопределяемые методы
 	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
 	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
+	
+	const ALadder* GetAvailableLadder() const;
 	
 protected:
 	virtual bool CanSprint();

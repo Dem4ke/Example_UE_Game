@@ -46,14 +46,49 @@ bool UEGBaseCharacterMovementComponent::IsMantling() const
 		CustomMovementMode == static_cast<uint8>(ECustomMovementMode::CMOVE_Mantling);
 }
 
+void UEGBaseCharacterMovementComponent::AttachToLadder(const ALadder* Ladder)
+{
+	CurrentLadder = Ladder;
+	SetMovementMode(MOVE_Custom, static_cast<uint8>(ECustomMovementMode::CMOVE_Ladder));
+}
+
+void UEGBaseCharacterMovementComponent::DetachFromLadder()
+{
+	SetMovementMode(MOVE_Falling);
+}
+
+bool UEGBaseCharacterMovementComponent::IsOnLadder() const
+{
+	return UpdatedComponent && 
+		MovementMode == MOVE_Custom && 
+		CustomMovementMode == static_cast<uint8>(ECustomMovementMode::CMOVE_Ladder);
+}
+
+const ALadder* UEGBaseCharacterMovementComponent::GetCurrentLadder() const
+{
+	return CurrentLadder;
+}
+
+// Получение состояния спринта
+bool UEGBaseCharacterMovementComponent::IsSprinting() const
+{
+	return bIsSprinting;
+}
+
 float UEGBaseCharacterMovementComponent::GetMaxSpeed() const
 {
+	float Result = Super::GetMaxSpeed();
+	
 	if (bIsSprinting)
 	{
-		return SprintSpeed;
+		Result = SprintSpeed;
+	}
+	else if (IsOnLadder())
+	{
+		Result = LadderClimbingMaxSpeed;
 	}
 	
-	return Super::GetMaxSpeed();
+	return Result;
 }
 
 // Обработчик физики в кастомном моде перемещения
@@ -63,34 +98,12 @@ void UEGBaseCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iterat
 	{
 		case static_cast<uint8>(ECustomMovementMode::CMOVE_Mantling):
 		{
-			float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) + 
-				CurrentMantlingParameters.StartTime;
-				
-			FVector MantlingCurveValue = CurrentMantlingParameters.MantlingCurve->GetVectorValue(ElapsedTime);
-			float PositionAlpha = MantlingCurveValue.X;
-			float XYCorrectionAlpha = MantlingCurveValue.Y;
-			float ZCorrectionAlpha = MantlingCurveValue.Z;
-				
-			FVector CorrectedInitialLocation = FMath::Lerp(CurrentMantlingParameters.InitialLocation, 
-				CurrentMantlingParameters.InitialAnimationLocation, XYCorrectionAlpha);
-				
-			CorrectedInitialLocation.Z = FMath::Lerp(CurrentMantlingParameters.InitialLocation.Z, 
-				CurrentMantlingParameters.InitialAnimationLocation.Z, ZCorrectionAlpha);
-				
-			FVector NewLocation = FMath::Lerp(CorrectedInitialLocation, 
-				CurrentMantlingParameters.TargetLocation, PositionAlpha);	
-			FRotator NewRotation = FMath::Lerp(CurrentMantlingParameters.InitialRotation, 
-				CurrentMantlingParameters.TargetRotation, PositionAlpha);
-				
-			FVector DeltaLocation = NewLocation - GetActorLocation();
-			FHitResult Hit;	
-				
-			SafeMoveUpdatedComponent(DeltaLocation, NewRotation, false, Hit);	
-				
+			PhysMantle(DeltaTime, Iterations);
 			break;
 		}
 		default:
 		{
+			PhysLadder(DeltaTime, Iterations);
 			break;
 		}
 	}
@@ -130,6 +143,7 @@ void UEGBaseCharacterMovementComponent::OnMovementModeChanged(
 	{
 		switch (CustomMovementMode)
 		{
+			// Лазание
 			case static_cast<uint8>(ECustomMovementMode::CMOVE_Mantling):
 			{
 				GetWorld()->GetTimerManager().SetTimer(MantlingTimer, 
@@ -144,10 +158,49 @@ void UEGBaseCharacterMovementComponent::OnMovementModeChanged(
 			}
 		}
 	}
+	// Если предыдущий moveMode был передвижение по лестнице
+	else if (PreviousMovementMode == MOVE_Custom && 
+		PreviousCustomMode == static_cast<uint8>(ECustomMovementMode::CMOVE_Ladder))
+	{
+		// Очищаем закешированную лестницу
+		CurrentLadder = nullptr;
+	}
 }
 
-// Получение состояния спринта
-bool UEGBaseCharacterMovementComponent::IsSprinting() const
+// Метод обработки физики во время лазанья
+void UEGBaseCharacterMovementComponent::PhysMantle(float DeltaTime, int32 Iterations)
 {
-	return bIsSprinting;
+	float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) + 
+				CurrentMantlingParameters.StartTime;
+				
+	FVector MantlingCurveValue = CurrentMantlingParameters.MantlingCurve->GetVectorValue(ElapsedTime);
+	float PositionAlpha = MantlingCurveValue.X;
+	float XYCorrectionAlpha = MantlingCurveValue.Y;
+	float ZCorrectionAlpha = MantlingCurveValue.Z;
+				
+	FVector CorrectedInitialLocation = FMath::Lerp(CurrentMantlingParameters.InitialLocation, 
+		CurrentMantlingParameters.InitialAnimationLocation, XYCorrectionAlpha);
+				
+	CorrectedInitialLocation.Z = FMath::Lerp(CurrentMantlingParameters.InitialLocation.Z, 
+		CurrentMantlingParameters.InitialAnimationLocation.Z, ZCorrectionAlpha);
+				
+	FVector NewLocation = FMath::Lerp(CorrectedInitialLocation, 
+		CurrentMantlingParameters.TargetLocation, PositionAlpha);	
+	FRotator NewRotation = FMath::Lerp(CurrentMantlingParameters.InitialRotation, 
+		CurrentMantlingParameters.TargetRotation, PositionAlpha);
+				
+	FVector DeltaLocation = NewLocation - GetActorLocation();
+	
+	FHitResult Hit;	
+	SafeMoveUpdatedComponent(DeltaLocation, NewRotation, false, Hit);	
+}
+
+// Метод обработки физики во время использования лестницы
+void UEGBaseCharacterMovementComponent::PhysLadder(float DeltaTime, int32 Iterations)
+{
+	CalcVelocity(DeltaTime, 1.0f, false, LadderClimbingBreakingDeceleration);
+	FVector DeltaLocation = Velocity * DeltaTime;
+	
+	FHitResult Hit;	
+	SafeMoveUpdatedComponent(DeltaLocation, GetOwner()->GetActorRotation(), true, Hit);	
 }
